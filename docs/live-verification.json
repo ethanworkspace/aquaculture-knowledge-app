@@ -14,7 +14,7 @@
     "legacy_auth_preserved": true,
     "mobile_login_and_revocation": true,
     "browser_origin_rejected": true,
-    "deployed_adapter_sha256": "cc4bed21e266d9ead56870024431a9ac4f7caf8d6538bb73da4957e6b0f370b5"
+    "deployed_adapter_sha256": "cb143d5ff479fbd431476f9b8d5747cb8cd7c332c2b2e62ba340e3f790d1dd52"
   },
   "backend_smoke": {
     "status": "DONE",
@@ -27,5 +27,6 @@
     "elapsed_seconds": 148.01,
     "https": true,
     "mocked": false
-  }
+  },
+  "acceptance_results": "acceptance/results.json"
 }

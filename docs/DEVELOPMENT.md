@@ -24,6 +24,8 @@ test/live_gateway_test.dart 預設跳過，避免一般測試觸發推論。自�
 flutter test test/live_gateway_test.dart --reporter expanded
 ```
 
+`test/live_acceptance_test.dart` 另驗證範圍外問題應回傳資訊不足或受控的待核對回覆，且不附引用；以相同私密環境設定單獨執行。
+
 存取碼只能透過私密程序環境傳入，不要寫入 shell 歷史、repo、建置參數或 --dart-define。MARINE_TEST_RESULT_PATH 可輸出不含憑證／答案全文的摘要。本測試呼叫真實 M2 並確認來源存在，需服務電腦、Ollama、API 與 HTTPS tunnel 在線，推論槽空閒。
 
 ## 程式與後續

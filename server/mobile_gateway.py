@@ -9,6 +9,29 @@ class MobileError(Exception):
     def __init__(self, status, code, message, retryable=False):
         self.status, self.code, self.message, self.retryable = status, code, message, retryable
 
+def display_locator(value):
+    """Show supplied document pages/section, never internal OCR geometry or IDs."""
+    missing='來源尚未提供可讀的頁碼或章節定位'
+    if isinstance(value,str):
+        try: structured=json.loads(value)
+        except (ValueError,TypeError):
+            return re.sub(r'(?:[A-Za-z]:[\\/]|file://)[^\n]*','[本機路徑不公開]',value)[:1000] or missing
+        if not isinstance(structured,(dict,list)):return value[:1000] or missing
+        value=structured
+    if not isinstance(value,dict):return missing
+    pages=value.get('physical_pages',[])
+    pages=pages if isinstance(pages,list) else []
+    if not pages:
+        pages=[e.get('page') for e in value.get('elements',[]) if isinstance(e,dict)] if isinstance(value.get('elements'),list) else []
+    pages=sorted({p for p in pages if isinstance(p,int) and not isinstance(p,bool) and p>0})[:32]
+    parts=[]
+    if len(pages)==1:parts.append(f'文件第 {pages[0]} 頁')
+    elif pages:parts.append('文件頁碼：'+'、'.join(map(str,pages)))
+    section=value.get('section')
+    if isinstance(section,str) and section.strip():
+        parts.append(re.sub(r'(?:[A-Za-z]:[\\/]|file://)[^\n]*','[本機路徑不公開]',section)[:200])
+    return ' · '.join(parts) or missing
+
 class MobileGateway:
     def __init__(self, service, access_code, database, session_seconds=86400):
         if not access_code: raise ValueError('Workspace access code must be configured server-side')
@@ -132,9 +155,7 @@ class MobileGateway:
                 source=self.service.sources.get(context.get('source_id'),{})
                 quotes=[x.get('quote','') for x in checks if x.get('chunk_id')==context['chunk_id'] and x.get('quote_verified') is True]
                 quote='\n\n'.join(q for q in quotes if isinstance(q,str) and q) or context.get('source_quote','')
-                locator=context.get('exact_locator') or '來源尚未提供頁碼或章節定位'
-                if not isinstance(locator,str): locator=json.dumps(locator,ensure_ascii=False)
-                locator=re.sub(r'(?:[A-Za-z]:[\\/]|file://)[^\n]*','[本機路徑不公開]',locator)[:1000]
+                locator=display_locator(context.get('exact_locator'))
                 evidence.append({'chunk_id':context['chunk_id'],'source_id':context.get('source_id'),
                     'title':source.get('title') or context.get('source_id') or '來源名稱待補',
                     'publisher':source.get('publisher'),'version':context.get('source_version'),

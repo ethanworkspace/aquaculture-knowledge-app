@@ -148,7 +148,7 @@ class GatewayService implements AuthenticatedQuestionService {
       body: body,
       token: token,
     );
-    for (var count = 0; count < maxPolls; count++) {
+    for (var count = 0; count <= maxPolls; count++) {
       checkSession();
       final status = result['status'];
       if (result['request_id'] != job.id) {
@@ -166,6 +166,7 @@ class GatewayService implements AuthenticatedQuestionService {
       if (status != 'RUNNING') {
         throw const QuestionFailure('問答服務回傳未知狀態，暫不顯示內容。');
       }
+      if (count == maxPolls) break;
       await Future<void>.delayed(pollInterval);
       checkSession();
       result = await _exchange(

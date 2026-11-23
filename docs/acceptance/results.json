@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-23",
+  "version": "0.3.1+4",
+  "decision": "development_beta_functional_pass_with_performance_and_device_limits",
+  "fixes": [
+    "Completion on the final poll is processed instead of incorrectly showing a timeout.",
+    "Structured source locators become readable page labels instead of internal OCR geometry."
+  ],
+  "flutter_unit_widget_tests": {
+    "passed": 15,
+    "live_cases_skipped_by_default": 2
+  },
+  "gateway_unit_tests": {
+    "passed": 8
+  },
+  "flutter_live_positive": {
+    "passed": true,
+    "model_id": "M2",
+    "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+    "corpus_version": "marine-unified-v6-20261121_160441",
+    "evidence_count": 2,
+    "answer_status": "partial",
+    "mocked": false
+  },
+  "flutter_live_negative": {
+    "passed": true,
+    "model_id": "M2",
+    "answer_status": "INSUFFICIENT_EVIDENCE",
+    "answer_origin": "SYSTEM_GUIDANCE",
+    "evidence_count": 0,
+    "mocked": false
+  },
+  "android_answer": {
+    "completed": true,
+    "answer_status": "partial",
+    "elapsed_seconds": 81.01,
+    "release_apk": true,
+    "android_api": 35,
+    "mocked": false
+  },
+  "android_note": {
+    "saved_answer": true,
+    "note_saved_and_reopened": true
+  },
+  "android_remove_saved": {
+    "remove_saved_confirmed": true,
+    "saved_list_empty": true
+  },
+  "android_network_resume": {
+    "passed": true,
+    "forced_offline": true,
+    "resumed_original_request": true,
+    "additional_server_jobs": 1,
+    "duplicate_inference": false,
+    "human_readable_source_page": true,
+    "internal_locator_hidden": true,
+    "elapsed_seconds": 301.81
+  },
+  "android_final": {
+    "passed": true,
+    "android_api": 35,
+    "release_apk_installed": true,
+    "version_name": "0.3.1",
+    "version_code": 4,
+    "cold_start_ms": 1065,
+    "background_return_ms": 162,
+    "history_rows": 2,
+    "clear_cancel_preserved_data": true,
+    "clear_confirm_removed_local_data": true,
+    "research_results_preserved": true,
+    "logout_returned_to_login": true,
+    "access_code_field_empty_after_logout": true,
+    "logout_revoked_server_session": true,
+    "rotation_and_font_scale_1_3_checked": true,
+    "android_crash_buffer_clean": true,
+    "installed_apk_sha256": "4cb230316e8da04a79afcd43066345586b646f4d3a46b72bb12cac09ec41ca86",
+    "installed_apk_matches_candidate": true
+  },
+  "native_backend": {
+    "running_jobs": 0,
+    "model_id": "M2",
+    "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+    "answer_status": "ANSWERED_PARTIAL",
+    "answer_origin": "MODEL_GENERATED",
+    "cited_chunks": 2,
+    "quote_checks": 2,
+    "all_quotes_verified": true
+  },
+  "https_routes": {
+    "passed": true,
+    "https": true,
+    "legacy_auth_preserved": true,
+    "mobile_login_and_revocation": true,
+    "browser_origin_rejected": true,
+    "deployed_adapter_sha256": "cb143d5ff479fbd431476f9b8d5747cb8cd7c332c2b2e62ba340e3f790d1dd52"
+  },
+  "physical_android_tested": false,
+  "ios_build_or_device_tested": false,
+  "performance_note": "Observed 81.01 seconds for a native answer; 301.81 seconds for a separate backend-restart and forced-disconnection/resume scenario. Not a latency benchmark or general guarantee."
+}

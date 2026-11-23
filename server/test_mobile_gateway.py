@@ -1,6 +1,6 @@
 import json, tempfile, unittest, uuid
 from pathlib import Path
-from mobile_gateway import MobileGateway, MobileError
+from mobile_gateway import MobileGateway, MobileError, display_locator
 
 class FakeService:
     model_settings={'M2':{'digest':'test-m2-digest'}}
@@ -44,6 +44,13 @@ class GatewayTests(unittest.TestCase):
         self.assertNotIn('PRIVATE_RAW',json.dumps(result))
         self.assertEqual(result['record']['evidence'][0]['title'],'Source title')
         with self.assertRaises(MobileError):self.gateway.start(self.owner,self.body()|{'model_id':'M4'})
+    def test_source_pages_readable_without_ocr_metadata(self):
+        value={'document_id':'INTERNAL-DOC','physical_pages':[3,3],'elements':[{'page':3,'bbox':[1,2,3,4],'element_id':'INTERNAL-ELEMENT'}]}
+        self.assertEqual(display_locator(value),'文件第 3 頁')
+        self.assertEqual(display_locator(json.dumps(value)),'文件第 3 頁')
+        self.assertNotIn('INTERNAL',display_locator({'document_id':'INTERNAL'}))
+        self.assertNotIn('C:',display_locator('C:/private/document.pdf'))
+        self.assertEqual(display_locator('第八章，第 3 頁'),'第八章，第 3 頁')
     def test_identity_and_blocked_answers_fail_closed(self):
         result=self.gateway.start(self.owner,self.body())
         backend=next(iter(self.service.jobs.values()))['record']

@@ -1,14 +1,14 @@
 {
-  "file": "aquaculture-knowledge-app-0.3.0-live.apk",
+  "file": "aquaculture-knowledge-app-0.3.1-live.apk",
   "size": 56324735,
-  "sha256": "cfc27fae73f1f7fc0460bcdf3078d6a5bd72e9ebca0b02796502c5968b0927a1",
+  "sha256": "4cb230316e8da04a79afcd43066345586b646f4d3a46b72bb12cac09ec41ca86",
   "abis": [
     "arm64-v8a",
     "armeabi-v7a",
     "x86_64"
   ],
-  "version_name": "0.3.0",
-  "version_code": 3,
+  "version_name": "0.3.1",
+  "version_code": 4,
   "min_sdk": 24,
   "target_sdk": 36,
   "package": "com.ethanworkspace.aquacultureknowledge",
@@ -16,8 +16,12 @@
   "build_mode": "release",
   "signing": "development debug certificate, APK v2 verified",
   "same_certificate_as_previous_debug_apk": true,
-  "device_install_tested": false,
   "internet_permission": true,
   "cleartext_http_allowed": false,
-  "private_credentials_found": false
+  "private_credentials_found": false,
+  "physical_device_install_tested": false,
+  "emulator_install_tested": true,
+  "emulator_api_level": 35,
+  "emulator_flow_tested": true,
+  "installed_apk_matches_release_candidate": true
 }

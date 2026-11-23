@@ -34,4 +34,6 @@ DONE.record 包含 model_id、model_digest、corpus_version、answer_status、an
 
 個人帳號、歷史分頁 API、雲端收藏／筆記、回報、媒體路由與研究資料刪除政策仍待實作。本版收藏、筆記與紀錄僅在手機記憶體，沒有雲端保存或個人資料刪除服務。
 
-部署來源見 [server/README.md](../../server/README.md)。
+0.3.1 將結構化來源定位轉為原資料實際提供的頁碼或章節，例如「文件第 3 頁」；內部 document_id、element_id 及 bbox 不呈現在手機來源畫面。沒有可讀定位時明示缺漏。
+
+部署來源見 [server/README.md](../../server/README.md)，本次實際驗收見 [ACCEPTANCE.md](../ACCEPTANCE.md)。

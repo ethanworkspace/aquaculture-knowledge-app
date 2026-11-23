@@ -4,13 +4,13 @@ Android 與 iPhone 共用的 Flutter／Dart 專案，可用 Android Studio 開�
 
 ## 下載 Android 測試 APK
 
-[下載 0.3.0 線上問答 APK](https://github.com/ethanworkspace/aquaculture-knowledge-app/releases/download/v0.3.0-live/aquaculture-knowledge-app-0.3.0-live.apk) · [版本說明與校驗碼](https://github.com/ethanworkspace/aquaculture-knowledge-app/releases/tag/v0.3.0-live)
+[下載 0.3.1 線上問答 APK](https://github.com/ethanworkspace/aquaculture-knowledge-app/releases/download/v0.3.1-live/aquaculture-knowledge-app-0.3.1-live.apk) · [版本說明與校驗碼](https://github.com/ethanworkspace/aquaculture-knowledge-app/releases/tag/v0.3.1-live)
 
 Android 7.0 以上可安裝。使用**與網站相同的工作區存取碼**登入，即可向現有 v6 知識庫與 M2 提問，查看回答狀態及實際引用來源。本版是共用研究工作區，尚未提供個人帳號。
 
 提供知識服務的電腦、Ollama、API 與 HTTPS 連線服務需保持開啟。App 沿用網站的 GitHub 連線清單取得目前服務位置；位置變更需重新登入。忙碌時不承諾排隊，可稍後接續原請求。
 
-收藏、筆記與手機紀錄只保留在本次使用期間，登出或關閉程式即清除。後端仍依研究系統既有政策保存問答紀錄；手機清除不刪除研究資料。APK 採 Release 編譯與開發用 debug 簽章，尚未完成 Android 真機驗收。iPhone 無法安裝 APK，需在 macOS／Xcode 另行簽署。
+收藏、筆記與手機紀錄只保留在本次使用期間，登出或關閉程式即清除。後端仍依研究系統既有政策保存問答紀錄；手機清除不刪除研究資料。APK 採 Release 編譯與開發用 debug 簽章，已通過 Android 15 模擬器安裝與完整流程驗收，尚未完成實體手機驗收。iPhone 無法安裝 APK，需在 macOS／Xcode 另行簽署。
 
 ## 開發與打包
 
@@ -24,6 +24,8 @@ flutter build apk --release
 ```
 
 輸出為 `build/app/outputs/flutter-apk/app-release.apk`。預設連線真實服務；離線示範需明確使用 `--dart-define=DEMO_MODE=true`，畫面會標示示範資料。不要把存取碼或管理金鑰放入程式、建置參數或 repo。
+
+驗收發現並修正最後一次等待完成的顯示問題，以及來源頁碼顯示內部定位資料的問題。實測問答約 81 秒，含後端重啟及斷線接續的情境約 5 分鐘；速度仍待優化。詳見 [0.3.1 驗收報告](docs/ACCEPTANCE.md)。
 
 Windows 可使用 `scripts/build-apk.ps1`。詳見 [開發指南](docs/DEVELOPMENT.md)、[驗證紀錄](docs/VALIDATION.md) 與 [App API 規格](docs/api/APP_GATEWAY.md)。
 
