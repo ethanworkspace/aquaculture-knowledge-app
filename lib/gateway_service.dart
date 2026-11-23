@@ -12,8 +12,8 @@ const discoveryAddress =
 class GatewayService implements AuthenticatedQuestionService {
   GatewayService({
     http.Client? client,
-    this.pollInterval = const Duration(seconds: 2),
-    this.maxPolls = 300,
+    this.pollInterval = const Duration(seconds: 1),
+    this.maxPolls = 600,
   }) : _client = client ?? http.Client();
   final http.Client _client;
   final Duration pollInterval;

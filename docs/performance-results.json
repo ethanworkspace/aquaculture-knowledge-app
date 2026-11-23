@@ -1,0 +1,173 @@
+{
+  "date": "2026-11-23",
+  "app_version": "0.3.2+5",
+  "sample_size": {
+    "baseline": 2,
+    "optimized_uncached": 2,
+    "optimized_cached": 2
+  },
+  "mean_https_seconds": {
+    "baseline": 26.521,
+    "optimized_uncached": 19.681,
+    "optimized_cached": 5.346
+  },
+  "uncached_reduction_percent": 25.8,
+  "cached_reduction_percent": 79.8,
+  "same_model_digest": true,
+  "retrieved_context_digests_identical": true,
+  "all_quotes_verified": true,
+  "new_generation_attempt_for_every_request": true,
+  "answer_cache_used": false,
+  "retrieval_cache": "process memory, 16 exact queries, version/species/policy/checkpoint scoped",
+  "startup": {
+    "cpu_threads": 10,
+    "event": "startup_preload",
+    "prepare_seconds": 66.30047939997166,
+    "ready": true,
+    "startup_ready_seconds": 68.46982310002204
+  },
+  "reranker_batch_comparison": {
+    "checkpoint_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "measurements": [
+      {
+        "mode": "original",
+        "seconds": 18.389,
+        "candidate_count": 40,
+        "windows": 40,
+        "max_score_difference": 0.0,
+        "top5_identical": true,
+        "full_order_identical": true
+      },
+      {
+        "mode": "length_buckets",
+        "seconds": 11.8988,
+        "candidate_count": 40,
+        "windows": 40,
+        "max_score_difference": 5.7220458984375e-06,
+        "top5_identical": true,
+        "full_order_identical": false
+      }
+    ]
+  },
+  "baseline": [
+    {
+      "case": "cold-weather",
+      "cycle": 1,
+      "https_seconds": 25.423,
+      "model_seconds": 5.52,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 2,
+      "context_digest": "f1f9efebbd3f0d5646c168bbebb15ab8c9fba65a8f8b04df49750f3a81100864",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364"
+    },
+    {
+      "case": "farming",
+      "cycle": 1,
+      "https_seconds": 27.619,
+      "model_seconds": 5.096,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 1,
+      "context_digest": "d03e20fa20566b87d7ee036e841801d6cb75d287d5bc641e75cccbfb7e674fa3",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364"
+    }
+  ],
+  "optimized": [
+    {
+      "case": "cold-weather",
+      "cycle": 1,
+      "https_seconds": 19.201,
+      "model_seconds": 5.447,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 2,
+      "context_digest": "f1f9efebbd3f0d5646c168bbebb15ab8c9fba65a8f8b04df49750f3a81100864",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+      "timings": {
+        "completed": true,
+        "cpu_threads": 10,
+        "generation_and_validation_seconds": 5.468036799924448,
+        "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+        "model_id": "M2",
+        "rerank_seconds": 12.480616600019857,
+        "retrieval_cache_hit": false,
+        "retrieval_seconds": 12.700849600019865,
+        "total_seconds": 18.175823400029913
+      }
+    },
+    {
+      "case": "farming",
+      "cycle": 1,
+      "https_seconds": 20.16,
+      "model_seconds": 5.105,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 1,
+      "context_digest": "d03e20fa20566b87d7ee036e841801d6cb75d287d5bc641e75cccbfb7e674fa3",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+      "timings": {
+        "completed": true,
+        "cpu_threads": 10,
+        "generation_and_validation_seconds": 5.171562499948777,
+        "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+        "model_id": "M2",
+        "rerank_seconds": 14.73399870004505,
+        "retrieval_cache_hit": false,
+        "retrieval_seconds": 14.868975299992599,
+        "total_seconds": 20.047178199980408
+      }
+    },
+    {
+      "case": "cold-weather",
+      "cycle": 2,
+      "https_seconds": 4.969,
+      "model_seconds": 4.507,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 2,
+      "context_digest": "f1f9efebbd3f0d5646c168bbebb15ab8c9fba65a8f8b04df49750f3a81100864",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+      "timings": {
+        "completed": true,
+        "cpu_threads": 10,
+        "generation_and_validation_seconds": 4.525184600031935,
+        "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+        "model_id": "M2",
+        "retrieval_cache_hit": true,
+        "retrieval_seconds": 0.000812400016002357,
+        "total_seconds": 4.531774000031874
+      }
+    },
+    {
+      "case": "farming",
+      "cycle": 2,
+      "https_seconds": 5.722,
+      "model_seconds": 4.844,
+      "answer_status": "ANSWERED_PARTIAL",
+      "answer_origin": "MODEL_GENERATED",
+      "evidence_count": 1,
+      "context_digest": "d03e20fa20566b87d7ee036e841801d6cb75d287d5bc641e75cccbfb7e674fa3",
+      "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+      "timings": {
+        "completed": true,
+        "cpu_threads": 10,
+        "generation_and_validation_seconds": 4.862951199989766,
+        "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+        "model_id": "M2",
+        "retrieval_cache_hit": true,
+        "retrieval_seconds": 0.0008028000593185425,
+        "total_seconds": 4.86979419994168
+      }
+    }
+  ],
+  "native_apk_verification": "native-0.3.2.json",
+  "serving_source_sha256": "71a33ffbb56fdfe2313f8714275eff23259447a53579995552c445ee913f8a33",
+  "validation": {
+    "flutter_general_passed": 15,
+    "python_gateway_and_serving_passed": 14,
+    "live_positive_passed": true,
+    "live_negative_passed": true,
+    "android_emulator_release_apk_passed": true
+  }
+}

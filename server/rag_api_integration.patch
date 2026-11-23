@@ -1,14 +1,75 @@
 --- a/backend/rag_api.py
 +++ b/backend/rag_api.py
-@@ -14,6 +14,7 @@
+@@ -14,6 +14,8 @@
  sys.path[:0] = [str(WORK/'backend/vendor'),str(WORK/'backend'),str(APP),str(ROOT)]
  from knowledge_notes import KnowledgeNotes
  from website_answer_guard import protect_website_answer
 +from mobile_gateway import MobileGateway
++from serving_runtime import ServingRuntime
  
  class Service:
      def __init__(self, state=None):
-@@ -237,7 +238,8 @@
+@@ -28,6 +30,8 @@
+         if int(PIL.__version__.split('.')[0])<13:raise RuntimeError('The isolated API requires patched Pillow 13 or newer.')
+         self.active = json.loads((ROOT/'research_staging/unified_rag_active.json').read_text(encoding='utf-8-sig'))
+         self.runtime = None
++        self.runtime_lock = threading.RLock()
++        self.serving = ServingRuntime(self.state/'serving_timings.jsonl')
+         self.lock = threading.Lock()
+         self.jobs_lock = threading.Lock()
+         self.auth_lock = threading.Lock()
+@@ -55,14 +59,26 @@
+         return con
+ 
+     def get_runtime(self):
+-        if self.runtime is None:
+-            import answer_policy, free_question_engine, unified_question_engine
+-            runtime_dir = self.state/'runtime'
+-            runtime_dir.mkdir(exist_ok=True)
+-            for name in ('prompts','streams','free_queries'):(runtime_dir/name).mkdir(exist_ok=True)
+-            for module in (answer_policy,free_question_engine,unified_question_engine): module.SESSION=runtime_dir
+-            self.runtime = unified_question_engine.UnifiedQuestionRag()
+-        return self.runtime
++        self.serving.configure_thread()
++        with self.runtime_lock:
++            if self.runtime is None:
++                with self.serving.phase('runtime_load_seconds'):
++                    import answer_policy, free_question_engine, unified_question_engine
++                    runtime_dir = self.state/'runtime'
++                    runtime_dir.mkdir(exist_ok=True)
++                    for name in ('prompts','streams','free_queries'):(runtime_dir/name).mkdir(exist_ok=True)
++                    for module in (answer_policy,free_question_engine,unified_question_engine): module.SESSION=runtime_dir
++                    self.runtime = self.serving.attach(unified_question_engine.UnifiedQuestionRag())
++            return self.runtime
++
++    def preload(self):
++        with self.runtime_lock:
++            runtime=self.get_runtime()
++            import unified_question_engine
++            identity=runtime.runtime.model_identity('M2')
++            if identity.get('digest')!=self.model_settings['M2']['digest']:
++                raise RuntimeError('M2 preload identity mismatch')
++            self.serving.preload_models(runtime,unified_question_engine.engine.OPTIONS)
+ 
+     def public_record(self, record):
+         payload = record['question_payload']
+@@ -121,13 +137,13 @@
+                 if self.lock.locked() or con.execute("SELECT count(*) FROM jobs WHERE status='RUNNING'").fetchone()[0]:
+                     raise BlockingIOError('目前有問答進行中，請稍後再試。')
+                 con.execute("INSERT INTO jobs (request_id,payload_digest,status) VALUES (?,?,'RUNNING')",(request_id,digest))
+-            threading.Thread(target=self._job_worker,args=(body,),daemon=True).start()
++            self.serving.submit(self._job_worker,body)
+         return {'status':'RUNNING','request_id':request_id}
+ 
+     def _job_worker(self, body):
+         request_id=body['request_id']
+         try:
+-            record=self.ask(body)
++            record=self.serving.measure(body['request_id'],lambda:self.ask(body))
+             with self.db() as con: con.execute("UPDATE jobs SET status='DONE',response_json=? WHERE request_id=?",(json.dumps(record,ensure_ascii=False),request_id))
+         except Exception:
+             logging.exception('Background question failed; no authorization headers logged')
+@@ -237,7 +253,8 @@
  
      def do_GET(self):
          parts=urlsplit(self.path)
@@ -18,7 +79,7 @@
          if not self.check_authorization():return
          if self.headers.get('Origin'):return self.send_json(403,{'error':'本服務僅接受已授權的伺服器連線。'})
          service=self.server.service
-@@ -261,7 +263,12 @@
+@@ -261,7 +278,12 @@
              return
          return self.send_json(404,{'error':'找不到這個服務。'})
  
@@ -31,7 +92,7 @@
          if not self.check_authorization():return
          try:
              if self.headers.get('Origin'):return self.send_json(403,{'error':'本服務僅接受已授權的伺服器連線。'})
-@@ -299,6 +306,7 @@
+@@ -299,6 +321,7 @@
      daemon_threads=True
      def __init__(self, address, service):
          self.service=service
@@ -39,3 +100,11 @@
          self.connection_slots=threading.BoundedSemaphore(16)
          super().__init__(address,Handler)
  
+@@ -318,4 +341,6 @@
+     logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
+     service=Service()
+     logging.info('Starting authenticated loopback API on 127.0.0.1:%s; model loads on demand',args.port)
+-    Server(('127.0.0.1',args.port),service).serve_forever()
++    server=Server(('127.0.0.1',args.port),service)
++    service.serving.preload(service.preload)
++    server.serve_forever()

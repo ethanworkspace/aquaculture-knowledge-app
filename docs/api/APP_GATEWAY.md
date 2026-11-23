@@ -37,3 +37,5 @@ DONE.record 包含 model_id、model_digest、corpus_version、answer_status、an
 0.3.1 將結構化來源定位轉為原資料實際提供的頁碼或章節，例如「文件第 3 頁」；內部 document_id、element_id 及 bbox 不呈現在手機來源畫面。沒有可讀定位時明示缺漏。
 
 部署來源見 [server/README.md](../../server/README.md)，本次實際驗收見 [ACCEPTANCE.md](../ACCEPTANCE.md)。
+
+0.3.2 沿用相同 API 契約，服務新增精確檢索快取與啟動預載入；新請求仍執行 M2。手機每秒輪詢一次，等待預算維持 10 分鐘。重啟後的第一個問題可能等待準備完成；沒有新增多人任務排隊承諾。速度與測量範圍見 [PERFORMANCE.md](../PERFORMANCE.md)。

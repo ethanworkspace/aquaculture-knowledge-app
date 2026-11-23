@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "version_name": "0.3.2",
+  "version_code": 5,
+  "android_api": 35,
+  "release_apk_installed": true,
+  "login": true,
+  "genuine_m2_answer_and_sources": true,
+  "source_page_readable": true,
+  "installed_apk_sha256": "3aac196ec112f9a5cfef4441f1ee7b70c97f3fa51dc87b64741c15bca66032e4",
+  "installed_apk_matches_candidate": true,
+  "crash_buffer_clean": true,
+  "readme_images": "Unedited captures of installed APK in Android 15 emulator",
+  "physical_device_tested": false
+}

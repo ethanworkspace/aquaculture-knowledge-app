@@ -16,7 +16,8 @@
     "browser_origin_rejected": true,
     "deployed_adapter_sha256": "cb143d5ff479fbd431476f9b8d5747cb8cd7c332c2b2e62ba340e3f790d1dd52"
   },
-  "backend_smoke": {
+  "acceptance_results": "acceptance/results.json",
+  "historical_0_3_0_backend_smoke": {
     "status": "DONE",
     "model_id": "M2",
     "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
@@ -28,5 +29,7 @@
     "https": true,
     "mocked": false
   },
-  "acceptance_results": "acceptance/results.json"
+  "app_version": "0.3.2",
+  "performance_results": "performance-results.json",
+  "native_apk_verification": "native-0.3.2.json"
 }

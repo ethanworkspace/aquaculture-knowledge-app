@@ -1,7 +1,7 @@
 name: aquaculture_knowledge_app
 description: 養殖漁業知識平台 Android/iOS Flutter application.
 publish_to: none
-version: 0.3.1+4
+version: 0.3.2+5
 environment:
   sdk: ^3.14.0
 dependencies:
