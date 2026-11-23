@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light"><title>養殖漁業知識平台｜養殖知識 App 第一版原型</title>
+<link rel="icon" href="assets/aquaculture_fish_favicon_v1.png"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="website-theme.css">
+</head>
+<body>
+<div class="workspace">
+ <aside class="brief">
+  <div class="brand"><img class="brand-image" src="assets/aquaculture_fish_favicon_v1.png" alt=""><span class="brand-copy">養殖漁業知識平台<small>AQUACULTURE KNOWLEDGE PLATFORM</small></span></div>
+  <p class="eyebrow">APP CONCEPT · V1</p><h1>讓每個養殖問題，<br>都有可追溯的起點。</h1>
+  <p class="intro">把知識問答、引用來源與個人收藏，帶到你的 Android 與 iPhone。</p>
+  <div class="preview-note"><strong>可點選的畫面原型</strong><p>所有答案與來源均為示範占位。未連接問答引擎，不會傳送或儲存真實帳號資料。</p></div>
+  <section class="controls" aria-label="原型檢視工具">
+   <label for="jump">檢視畫面</label><select id="jump"><option value="home">首頁</option><option value="ask">知識問答</option><option value="answer">回答詳情</option><option value="source">引用來源</option><option value="saved">我的收藏</option><option value="history">問答紀錄</option><option value="me">我的</option><option value="login">登入</option></select>
+   <label for="scenario">問答情境</label><select id="scenario"><option value="grounded">有據回答</option><option value="partial">部分資訊</option><option value="insufficient">證據不足</option><option value="invalid">驗證未通過</option><option value="offline">服務離線</option><option value="busy">服務忙碌</option><option value="failed">任務失敗</option></select>
+   <p>切換情境後送出問題，或直接檢視回答詳情。</p>
+  </section>
+  <p class="footnote">沿用 v6 知識庫與現有問答引擎<br>第一版預設 M2 · 畫面稿 2026.11.23</p>
+ </aside>
+ <main class="device-area" aria-label="手機 App 預覽">
+  <div class="device">
+   <div class="statusbar" aria-hidden="true"><span>9:41</span><span class="island"></span><span>▥ ◒ ▰</span></div>
+   <div class="demo-strip">互動原型 · 示範資料</div>
+   <header class="app-header"><button id="back" class="icon-button" aria-label="返回上一頁"></button><span id="page-title">養殖知識</span><span class="avatar" aria-label="示範帳號"><img src="assets/aquaculture_fish_favicon_v1.png" alt=""></span></header>
+   <div id="screen" class="screen" aria-live="polite"></div>
+   <nav id="bottom-nav" class="bottom-nav" aria-label="主要導覽"></nav>
+  </div>
+  <p class="device-caption">共用畫面設計 · 可直接操作</p>
+ </main>
+</div>
+<dialog id="dialog"><div id="dialog-content"></div></dialog>
+<div id="toast" role="status" hidden></div>
+<script src="app.js"></script>
+</body></html>

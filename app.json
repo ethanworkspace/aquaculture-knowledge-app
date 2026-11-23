@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "養殖漁業知識平台",
+    "slug": "aquaculture-knowledge-app",
+    "scheme": "aquaculture-knowledge",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/website/aquaculture_fish_favicon_v1.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ethanworkspace.aquacultureknowledge"
+    },
+    "android": {
+      "package": "com.ethanworkspace.aquacultureknowledge",
+      "adaptiveIcon": {
+        "backgroundColor": "#e4f2fc",
+        "foregroundImage": "./assets/website/aquaculture_fish_favicon_v1.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/website/aquaculture_fish_favicon_v1.png",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

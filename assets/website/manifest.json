@@ -1,0 +1,11 @@
+{
+  "source_repository": "https://github.com/ethanworkspace/hybrid-rag-aquaculture-knowledge-platform",
+  "source_directory": "streamlit_cloud/assets",
+  "sha256": {
+    "aquaculture_fish_favicon_v1.png": "1c7324420ba9f705e99203e3e4ab51955e4c7e8d8eb7a3e5e06e8236fc81a95b",
+    "ocean_watercolor_chibi_background.png": "3b2da72671ae1a5ba34da99e228e6ed9bd8b2a03f8e0c51c5ecd4bd89098a8a8",
+    "watercolor_chat.png": "e145add75eab6ea2c22f9e3eca340d1597bffd4f0de025d71a00d7a899bd9b6c",
+    "watercolor_history.png": "da3d7b6a8999f11eb5eca5f89065442c2dbc0e87a2ead1e02581989816dd8511",
+    "watercolor_knowledge.png": "21c880a40fde2215a03529ccc27753a7ac3f8d2c8cdbe86ba13ac3ad73a17912"
+  }
+}
