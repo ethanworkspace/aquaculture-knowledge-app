@@ -1,0 +1,31 @@
+{
+  "flutter_client": {
+    "passed": true,
+    "model_id": "M2",
+    "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+    "corpus_version": "marine-unified-v6-20261121_160441",
+    "evidence_count": 1,
+    "answer_status": "partial",
+    "mocked": false
+  },
+  "https_route_regression": {
+    "passed": true,
+    "https": true,
+    "legacy_auth_preserved": true,
+    "mobile_login_and_revocation": true,
+    "browser_origin_rejected": true,
+    "deployed_adapter_sha256": "cc4bed21e266d9ead56870024431a9ac4f7caf8d6538bb73da4957e6b0f370b5"
+  },
+  "backend_smoke": {
+    "status": "DONE",
+    "model_id": "M2",
+    "model_digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+    "corpus_version": "marine-unified-v6-20261121_160441",
+    "answer_status": "ANSWERED_PARTIAL",
+    "answer_origin": "MODEL_GENERATED",
+    "evidence_count": 1,
+    "elapsed_seconds": 148.01,
+    "https": true,
+    "mocked": false
+  }
+}

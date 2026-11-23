@@ -4,6 +4,28 @@ import 'domain.dart';
 
 const ink = Color(0xff24445a);
 const artPath = 'assets/website/';
+
+class AppModeScope extends InheritedWidget {
+  const AppModeScope({super.key, required this.store, required super.child});
+  final AppStore store;
+  static AppStore? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppModeScope>()?.store;
+  @override
+  bool updateShouldNotify(AppModeScope oldWidget) => oldWidget.store != store;
+}
+
+class ConnectionBanner extends StatelessWidget {
+  const ConnectionBanner({super.key});
+  @override
+  Widget build(BuildContext context) => Text(
+    AppModeScope.of(context)?.isLive == true
+        ? '線上知識庫 · M2 問答'
+        : '開發示範 · 未連接正式服務',
+    textAlign: TextAlign.center,
+    style: const TextStyle(fontSize: 12, color: Color(0xff466b84)),
+  );
+}
+
 Widget artwork(String name, [double size = 40]) => Image.asset(
   '$artPath$name.png',
   width: size,
@@ -53,14 +75,7 @@ Widget pageContent(List<Widget> children) => ListView(
         constraints: const BoxConstraints(maxWidth: 560),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: spaced([
-            const Text(
-              '開發示範 · 未連接正式服務',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Color(0xff466b84)),
-            ),
-            ...children,
-          ]),
+          children: spaced([const ConnectionBanner(), ...children]),
         ),
       ),
     ),
@@ -121,9 +136,42 @@ class DetailPage extends StatelessWidget {
 void openPage(BuildContext context, Widget page) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.store});
   final AppStore store;
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final controller = TextEditingController();
+  bool connecting = false;
+  String? error;
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> connect() async {
+    setState(() {
+      connecting = true;
+      error = null;
+    });
+    try {
+      await widget.store.authenticate(controller.text);
+      if (mounted) controller.clear();
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => error = e is QuestionFailure ? e.message : '暫時無法連線，請稍後再試。',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => connecting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     body: OceanBackground(
@@ -133,9 +181,46 @@ class LoginScreen extends StatelessWidget {
           Center(child: artwork('aquaculture_fish_favicon_v1', 110)),
           heading('養殖漁業知識平台'),
           body('把問答、引用來源與自己的筆記，帶到每一次養殖觀察中。'),
-          panel([body('此安裝版目前提供開發示範，所有回答與來源均為占位資料。此版本不收集真實帳號密碼。')]),
-          FilledButton(onPressed: store.login, child: const Text('進入示範帳號')),
-          body('示範資料只保留在本次使用期間，登出或關閉程式後會清除。'),
+          panel([
+            body(
+              widget.store.isLive
+                  ? '使用與網站相同的工作區存取碼，連接現有知識庫與 M2。這是共用研究工作區，尚未提供個人帳號。'
+                  : '此安裝版目前提供開發示範，所有回答與來源均為占位資料。',
+            ),
+          ]),
+          if (widget.store.isLive)
+            TextField(
+              controller: controller,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              maxLength: 128,
+              decoration: const InputDecoration(labelText: '工作區存取碼'),
+              onSubmitted: (_) {
+                if (!connecting) connect();
+              },
+            ),
+          if (error != null)
+            Text(error!, style: const TextStyle(color: Color(0xff943e36))),
+          FilledButton(
+            onPressed: connecting
+                ? null
+                : widget.store.isLive
+                ? connect
+                : widget.store.login,
+            child: Text(
+              connecting
+                  ? '正在連線…'
+                  : widget.store.isLive
+                  ? '連線登入'
+                  : '進入示範帳號',
+            ),
+          ),
+          body(
+            widget.store.isLive
+                ? '提供知識服務的電腦與連線服務需保持開啟。收藏與筆記目前只保留在本次使用期間。'
+                : '示範資料只保留在本次使用期間，登出或關閉程式後會清除。',
+          ),
         ]),
       ),
     ),
@@ -328,7 +413,11 @@ class _AskScreenState extends State<AskScreen> {
       },
       child: const Text('送出問題'),
     ),
-    body('目前不會呼叫正式模型。測試情境可在「我的」切換。'),
+    body(
+      widget.store.isLive
+          ? '將使用現有知識庫與 M2 回答。資料不足時會說明缺口，不會使用示範答案補上。'
+          : '目前不會呼叫正式模型。測試情境可在「我的」切換。',
+    ),
   ]);
 }
 
@@ -344,31 +433,57 @@ class AnswerScreen extends StatelessWidget {
       if (job == null) {
         return DetailPage(
           title: '回答詳情',
-          child: pageContent([body('找不到這筆示範紀錄。')]),
+          child: pageContent([body('找不到這筆問答紀錄。')]),
         );
       }
       final answer = job.answer;
       return DetailPage(
         title: '回答詳情',
         child: pageContent([
-          body('${job.species} · M2 · 示範資料'),
+          body('${job.species} · M2${store.isLive ? '' : ' · 示範資料'}'),
           heading(job.question),
           if (job.status == JobStatus.running)
             panel([
               const Center(child: CircularProgressIndicator()),
-              body('正在模擬處理。可以離開畫面，稍後從問答紀錄查看。'),
+              body(
+                store.isLive
+                    ? '正在查找資料與產生回答。可以離開畫面，稍後從問答紀錄查看；首次載入可能較久。'
+                    : '正在模擬處理。可以離開畫面，稍後從問答紀錄查看。',
+              ),
             ]),
           if (job.status == JobStatus.failed)
             panel([body(job.error ?? '問答未完成。')]),
+          if (job.status == JobStatus.failed && job.canResume)
+            FilledButton(
+              onPressed: () => store.resume(id),
+              child: const Text('接續原請求'),
+            ),
           if (answer != null) ...[
             body(answerLabel(answer.status)),
+            if (store.isLive)
+              body(
+                answer.origin == 'MODEL_GENERATED'
+                    ? '回答形式：模型根據來源作答'
+                    : answer.origin == 'DETERMINISTIC_EVIDENCE_EXTRACTION'
+                    ? '回答形式：來源內容摘取'
+                    : '回答形式：查核與資訊缺口說明',
+              ),
+            if (answer.corpusVersion.isNotEmpty)
+              Text(
+                '知識庫版本：${answer.corpusVersion}',
+                style: const TextStyle(fontSize: 12, color: Color(0xff466b84)),
+              ),
             panel([body(answer.text)]),
             for (final missing in answer.missing) body('尚需補充：$missing'),
             if (answer.sources.isNotEmpty) ...[
               OutlinedButton(
                 onPressed: () =>
                     openPage(context, SourceScreen(sources: answer.sources)),
-                child: const Text('查看引用來源（示範）'),
+                child: Text(
+                  AppModeScope.of(context)?.isLive == true
+                      ? '查看引用來源'
+                      : '查看引用來源（示範）',
+                ),
               ),
               FilledButton(
                 onPressed: () {
@@ -379,12 +494,13 @@ class AnswerScreen extends StatelessWidget {
               ),
             ] else
               body('本次沒有可顯示的引用來源。'),
-            OutlinedButton(
-              onPressed: () => ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('已完成回報操作示範，未傳送資料。'))),
-              child: const Text('模擬回報回答有疑問'),
-            ),
+            if (!store.isLive)
+              OutlinedButton(
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('已完成回報操作示範，未傳送資料。')),
+                ),
+                child: const Text('模擬回報回答有疑問'),
+              ),
           ],
           OutlinedButton(
             onPressed: () => openPage(
@@ -414,7 +530,11 @@ class SourceScreen extends StatelessWidget {
     title: '引用來源',
     child: pageContent([
       heading('每個重點，都能追溯。'),
-      body('以下為來源畫面占位，非真實文件或養殖依據。'),
+      body(
+        AppModeScope.of(context)?.isLive == true
+            ? '以下為本次回答實際引用的來源摘錄。頁碼與章節依原始資料顯示。'
+            : '以下為來源畫面占位，非真實文件或養殖依據。',
+      ),
       for (final source in sources)
         panel([
           heading(source.title),
@@ -514,14 +634,18 @@ class _NoteScreenState extends State<NoteScreen> {
       child: pageContent([
         heading(item.job.question),
         panel([
-          body('原回答快照 · 示範'),
+          body(widget.store.isLive ? '原回答快照' : '原回答快照 · 示範'),
           body(item.job.answer!.text),
           OutlinedButton(
             onPressed: () => openPage(
               context,
               SourceScreen(sources: item.job.answer!.sources),
             ),
-            child: const Text('查看引用來源（示範）'),
+            child: Text(
+              AppModeScope.of(context)?.isLive == true
+                  ? '查看引用來源'
+                  : '查看引用來源（示範）',
+            ),
           ),
         ]),
         TextField(
@@ -538,14 +662,14 @@ class _NoteScreenState extends State<NoteScreen> {
             ScaffoldMessenger.of(context)
                 .showSnackBar(const SnackBar(content: Text('已儲存到本次使用期間。')));
           },
-          child: const Text('儲存示範筆記'),
+          child: Text(widget.store.isLive ? '儲存筆記' : '儲存示範筆記'),
         ),
         OutlinedButton(
           onPressed: () async {
             final remove = await confirm(
               context,
               '取消這則收藏？',
-              '示範收藏與筆記會移除，問答紀錄仍會保留。',
+              '本機收藏與筆記會移除，問答紀錄仍會保留。',
             );
             if (!remove || !context.mounted) return;
             widget.store.removeSaved(widget.id);
@@ -589,37 +713,49 @@ class MeScreen extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: store,
     builder: (context, _) => pageContent([
-      heading('示範養殖夥伴'),
+      heading(store.isLive ? '養殖知識工作區' : '示範養殖夥伴'),
       panel([
-        body('正式帳號與雲端保存尚未接入。'),
+        body(store.isLive ? '已連接現有知識庫與 M2。這是存取碼保護的共用研究工作區。' : '正式帳號與雲端保存尚未接入。'),
         OutlinedButton(
           onPressed: () => openPage(context, HistoryScreen(store: store)),
           child: Text('問答紀錄 · ${store.jobs.length} 筆'),
         ),
-        body('服務狀態：示範模式，未連接正式服務。'),
+        body(
+          store.isLive
+              ? '收藏、筆記與這裡的紀錄保留在本次使用期間。提供知識服務的電腦必須保持運作。'
+              : '服務狀態：示範模式，未連接正式服務。',
+        ),
       ]),
-      body('開發用問答情境'),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final scenario in DemoScenario.values)
-            ChoiceChip(
-              label: Text(scenarioLabel(scenario)),
-              selected: store.scenario == scenario,
-              onSelected: (_) => store.setScenario(scenario),
-            ),
-        ],
-      ),
+      if (!store.isLive) body('開發用問答情境'),
+      if (!store.isLive)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final scenario in DemoScenario.values)
+              ChoiceChip(
+                label: Text(scenarioLabel(scenario)),
+                selected: store.scenario == scenario,
+                onSelected: (_) => store.setScenario(scenario),
+              ),
+          ],
+        ),
       OutlinedButton(
         onPressed: () async {
-          if (await confirm(context, '清除示範資料？', '只會移除本次使用期間的問答、收藏與筆記。')) {
+          if (await confirm(
+            context,
+            '清除本機資料？',
+            '只會移除本次使用期間的問答、收藏與筆記，不會刪除伺服器研究紀錄。',
+          )) {
             store.clear();
           }
         },
-        child: const Text('清除示範資料'),
+        child: Text(store.isLive ? '清除本機資料' : '清除示範資料'),
       ),
-      OutlinedButton(onPressed: store.logout, child: const Text('登出示範帳號')),
+      OutlinedButton(
+        onPressed: store.logout,
+        child: Text(store.isLive ? '登出工作區' : '登出示範帳號'),
+      ),
     ]),
   );
 }

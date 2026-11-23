@@ -1,0 +1,41 @@
+--- a/backend/rag_api.py
++++ b/backend/rag_api.py
+@@ -14,6 +14,7 @@
+ sys.path[:0] = [str(WORK/'backend/vendor'),str(WORK/'backend'),str(APP),str(ROOT)]
+ from knowledge_notes import KnowledgeNotes
+ from website_answer_guard import protect_website_answer
++from mobile_gateway import MobileGateway
+ 
+ class Service:
+     def __init__(self, state=None):
+@@ -237,7 +238,8 @@
+ 
+     def do_GET(self):
+         parts=urlsplit(self.path)
+-        if parts.path=='/health': return self.send_json(200,{'status':'ok','service':'marine-knowledge-api'})
++        if parts.path=='/health': return self.send_json(200,{'status':'ok','service':'marine-knowledge-api','mobile_api_version':1})
++        if parts.path.startswith('/app/v1/'): return self.server.mobile.handle(self)
+         if not self.check_authorization():return
+         if self.headers.get('Origin'):return self.send_json(403,{'error':'本服務僅接受已授權的伺服器連線。'})
+         service=self.server.service
+@@ -261,7 +263,12 @@
+             return
+         return self.send_json(404,{'error':'找不到這個服務。'})
+ 
++    def do_DELETE(self):
++        if urlsplit(self.path).path.startswith('/app/v1/'): return self.server.mobile.handle(self)
++        return self.send_json(405,{'error':'Unsupported method'})
++
+     def do_POST(self):
++        if urlsplit(self.path).path.startswith('/app/v1/'): return self.server.mobile.handle(self)
+         if not self.check_authorization():return
+         try:
+             if self.headers.get('Origin'):return self.send_json(403,{'error':'本服務僅接受已授權的伺服器連線。'})
+@@ -299,6 +306,7 @@
+     daemon_threads=True
+     def __init__(self, address, service):
+         self.service=service
++        self.mobile=MobileGateway(service,service.credentials['app_access_code'],service.state/'mobile_gateway.sqlite3')
+         self.connection_slots=threading.BoundedSemaphore(16)
+         super().__init__(address,Handler)
+ 

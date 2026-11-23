@@ -1,0 +1,2 @@
+# Unified patches intentionally contain space-prefixed blank context lines.
+server/rag_api_integration.patch -whitespace

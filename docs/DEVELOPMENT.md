@@ -1,40 +1,37 @@
 # Flutter／Android Studio 開發
 
-主專案為 repository 根目錄的 Flutter 專案。先前 Expo 程式保存在 `archive/expo/` 作為歷史參考；不再作為主開發路徑。
+主專案為根目錄的 Flutter 工程。用 Android Studio 開啟有 pubspec.yaml 的資料夾，設定 Flutter SDK 與 Android SDK／JDK，執行 flutter pub get 後選擇手機或模擬器。
 
-## 開啟專案
-
-1. 安裝 Flutter 穩定版 SDK 與 Android Studio 的 Flutter／Dart 外掛。
-2. 在 Android Studio 開啟本專案根目錄（有 pubspec.yaml 的資料夾），設定本機 Flutter SDK。
-3. 使用 Android SDK Manager 準備對應的 Android 平台與 Build Tools，並使用相容 JDK。
-4. 執行 `flutter pub get`；選擇手機或模擬器後執行 `flutter run`。
-
-## 檢查與產生 APK
+## 檢查與打包
 
 ```sh
 dart format lib test
 flutter analyze
 flutter test
+python -m unittest discover -s server -v
 flutter build apk --release
 ```
 
-輸出：`build/app/outputs/flutter-apk/app-release.apk`。這是 Release 模式的可安裝測試版，目前採本機 debug 簽章，沒有正式發佈金鑰。Windows 也可執行 `scripts/build-apk.ps1`，以參數指定 Flutter／Android SDK 與 JDK；需要除錯版時加上 `-Mode debug`，輸出為 app-debug.apk。
+Release 輸出為 `build/app/outputs/flutter-apk/app-release.apk`。Windows 可用 scripts/build-apk.ps1 指定 SDK／JDK。APK 目前採開發用 debug 簽章，私鑰不可提交 repo。Android 已開啟網路權限並停用明文 HTTP。
 
-同一套 Dart 程式已包含 `ios/` 工程，但 iPhone 不能安裝 APK。iOS 安裝版本需在 macOS／Xcode 另行建置與簽署；本次沒有驗證 iOS 原生建置。
+預設 GatewayService 連接真實服務。離線畫面開發可用 `flutter run --dart-define=DEMO_MODE=true`；畫面會標示示範。原始網站素材在 assets/website/。
 
-## 程式與素材
+## 真實問答測試
 
-- `lib/main.dart`：App 主題、登入狀態與應用入口。
-- `lib/screens.dart`：首頁、問答、回答來源、收藏筆記、我的與紀錄；使用 Flutter 畫面元件。
-- `lib/domain.dart`：任務、答案、來源、模擬服務與個人狀態；預留 QuestionService 介面。
-- `assets/website/`：網站原始背景與圖示；由 flutter_launcher_icons 產生 Android／iOS 需要的桌面圖示尺寸。
-- `test/`：回答守門、輸入限制、任務清除與登入到收藏筆記的畫面測試。
+test/live_gateway_test.dart 預設跳過，避免一般測試觸發推論。自行在測試程序環境設 MARINE_LIVE_TEST=1、MARINE_TEST_ACCESS_CODE（既有存取碼），再執行：
 
-## 後續工作
+```sh
+flutter test test/live_gateway_test.dart --reporter expanded
+```
 
-1. 建立使用者登入與 App 專用服務入口，再接現有 v6／M2。
-2. 實作任務權限、真正 request_id、斷線恢復、個人收藏、刪除及雲端保存。
-3. Android／iPhone 真機測試、弱網路、字體放大與背景切換。
-4. 設定正式簽署與封閉測試；不在 GitHub 提交簽署私鑰或服務金鑰。
+存取碼只能透過私密程序環境傳入，不要寫入 shell 歷史、repo、建置參數或 --dart-define。MARINE_TEST_RESULT_PATH 可輸出不含憑證／答案全文的摘要。本測試呼叫真實 M2 並確認來源存在，需服務電腦、Ollama、API 與 HTTPS tunnel 在線，推論槽空閒。
 
-現有畫面中的登入、回答、引用、回報與筆記仍是明示的本次執行期間示範，並非正式帳號或真實 RAG 結果。
+## 程式與後續
+
+- lib/main.dart：主題、登入與預設真實服務。
+- lib/gateway_service.dart：HTTPS 連線清單、token、固定識別碼、輪詢與版本核對。
+- lib/domain.dart：回答守門、接續、收藏與本次狀態；保留明示示範服務。
+- lib/screens.dart：網站背景、實際引用與可恢復錯誤。
+- server/：同現有 API 程序執行的 App 入口與整合差異。
+
+後續為 Android／iPhone 真機、弱網路／背景切換、正式簽署、固定網域與部署、個人帳號及雲端收藏。iOS 工程已包含，需在 macOS／Xcode 建置簽署，Windows 本次未測 iOS 建置。

@@ -80,3 +80,8 @@ coverage/
 *.apk
 *.aab
 *.ipa
+
+# Python adapter caches
+__pycache__/
+*.py[cod]
+.pytest_cache/

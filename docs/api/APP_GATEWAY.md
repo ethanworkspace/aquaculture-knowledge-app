@@ -1,37 +1,37 @@
-# App 服務入口契約草案（未實作）
+# App 服務入口 v1（0.3.0 已部署部分）
 
-現行 API 的實作與限制見 [EXISTING_API.md](EXISTING_API.md)。本文件是新的服務入口邊界，不代表既有後端已支援。
+日期：2026-11-23。原有研究 API 見 [EXISTING_API.md](EXISTING_API.md)。原有 `/v1/` 授權與路由保留；手機使用新增的 `/app/v1/`，共用管理金鑰不傳給手機。
 
-## 授權與資料
+## 工作區連線
 
-App 使用「使用者登入 Token」，不是現有服務共用 Key。入口核對每個任務、回答、收藏、紀錄及媒體的所有權；伺服器自行保管共用 RAG 金鑰。公開 App 內不包含 Token 範例值或服務管理金鑰。
+本版為**共用研究工作區**，沒有個人帳號。使用網站存取碼取得 24 小時隨機 bearer token。Token 只存在 App 記憶體；伺服器只存 SHA-256。登出撤銷 token 與請求映射。每個 token 的任務隔離，不能讀取其他連線或既有研究歷史。
 
-歷史研究紀錄不自動歸屬新帳號；個人資料另存，不改寫 Frozen Corpus 與研究原始生成。
+App 經 GitHub HTTPS 讀取 `hybrid-rag-aquaculture-knowledge-platform/main/streamlit_cloud/backend_endpoint.json`，核對服務名稱，只接受無帳密、無特殊路徑的 HTTPS `*.trycloudflare.com` 位址。手機沒有共用 HMAC 金鑰；連線清單依賴 GitHub 帳號與 TLS 完整性。API 不自動重新導向，不放寬憑證驗證。
 
-## 首次串接所需
+## 已實作路由
 
-| 方法與路徑 | 契約 |
+| 方法與路徑 | 輸入／回傳 |
 |---|---|
-| GET `/app/v1/bootstrap` | questions、sources、corpus_version、default_model_id；移除內部執行環境資訊 |
-| POST `/app/v1/jobs` | question 或 question_id、selected_species、request_id UUID；入口固定 M2，回傳狀態與識別碼 |
-| GET `/app/v1/jobs/{id}` | RUNNING／DONE／FAILED；只可讀本人任務；完成時包含 guarded record、實際 corpus_version |
-| GET `/app/v1/history?cursor=...` | 本人分頁紀錄；cursor 不暴露內部路徑 |
-| GET／POST `/app/v1/saved-answers` | 不可變回答快照、獨立 personal_note；同一回答收藏具冪等性 |
-| PATCH／DELETE `/app/v1/saved-answers/{id}` | 只編輯個人筆記／刪除本人收藏 |
-| POST `/app/v1/feedback` | attempt_id、reason、comment；只接受本人可讀的回答 |
-| GET `/app/v1/media/{id}` | 本人回答引用且可展示的媒體，不只檢查全域曾公開登錄 |
-| DELETE `/app/v1/history/{id}`、DELETE `/app/v1/me/data` | 刪除範圍、再次驗證與備份政策須先定義 |
+| POST `/app/v1/session` | `{access_code}`；回傳 session_token、expires_at、M2 digest、corpus_version、workspace_mode |
+| DELETE `/app/v1/session` | Bearer token；撤銷目前連線 |
+| GET `/app/v1/status` | Bearer token；安全的服務、模型與知識庫資訊 |
+| POST `/app/v1/jobs` | Bearer token；request_id UUID、question、selected_species；回傳 RUNNING／DONE／FAILED |
+| GET `/app/v1/jobs/{request_id}` | Bearer token；只讀目前連線擁有的請求 |
 
-請求 body 上限沿用現有約束：自由問題最多 2,000 字；request_id 與完整欄位集合維持不變，避免重試 digest 改變。
+POST 必須為 JSON，最多 16 KiB；自由問題最多 2,000 字，魚種沿用既有驗證。App 不能指定模型或檢索上下文，服務端固定 M2。底層維持單一推論槽，忙碌回傳 429，沒有新增排隊。登入失敗每分鐘最多 8 次（目前全服務共用），每連線每分鐘最多建立 10 筆請求映射。
 
-目前底層只有單一推論槽，忙碌返回 429；不可承諾 QUEUED、順位或等待時間，除非入口實際新增排程。
+App 保留 UUID 與完整輸入，接續時重送相同 POST，由既有服務冪等地取回同一任務，再輪詢 GET。伺服器另配內部 UUID，避免與其他連線／研究任務撞號。同 UUID 改內容回傳 409；FAILED 新嘗試需新 UUID。手機超時不代表後端取消。關閉程式後 token 與手機紀錄不保存，不能跨次執行續接。
 
-## 任務與回答
+## 回答與錯誤
 
-網路恢復先查詢原 request_id。DONE 可取回原結果；FAILED 重送同 ID 不會重新執行，新的明確嘗試要使用新 UUID。手機顯示超時不等於伺服器停止，不能盲目建立重複推論。
+DONE.record 包含 model_id、model_digest、corpus_version、answer_status、answer_origin、final_answer、missing_information、evidence。入口與手機皆核對 M2 身分；手機亦核對登入時的知識庫版本。
 
-回應只提供可顯示的 final_answer，不包含 raw_model_answer。answer_status 必須明確區分 ANSWERED_GROUNDED、ANSWERED_PARTIAL、INSUFFICIENT_EVIDENCE、VALIDATION_FAILED；未知狀態保守處理。來源僅顯示實際 supporting_chunk_ids 可對應的片段，缺漏頁碼不能自行補造。
+狀態為 ANSWERED_GROUNDED、ANSWERED_PARTIAL、INSUFFICIENT_EVIDENCE、VALIDATION_FAILED。未知／驗證失敗以受控訊息取代，不顯示原始模型輸出或來源。來源只來自 supporting_chunk_ids 對應的本次 top5，優先採驗證過的引文，否則為原始檢索摘錄。缺頁碼時不自行補造；本機路徑不公開。
 
-錯誤格式建議統一：`{ "error": { "code": "SERVICE_BUSY", "message": "目前服務忙碌，請稍後再試。", "retryable": true } }`。至少區分未登入、權限不足、無此任務、輸入無效、忙碌、引擎離線及任務失敗。
+錯誤格式：`{"error":{"code":"SERVICE_BUSY","message":"…","retryable":true}}`。涵蓋存取碼錯誤、連線到期、無此任務、輸入錯誤、衝突、忙碌、限制、模型身分錯誤及服務離線。網路中斷、忙碌與可恢復錯誤顯示「接續原請求」。
 
-模擬服務的 demo-* 識別碼與文案只供本機畫面，不可直接傳往正式 API。
+## 待實作
+
+個人帳號、歷史分頁 API、雲端收藏／筆記、回報、媒體路由與研究資料刪除政策仍待實作。本版收藏、筆記與紀錄僅在手機記憶體，沒有雲端保存或個人資料刪除服務。
+
+部署來源見 [server/README.md](../../server/README.md)。

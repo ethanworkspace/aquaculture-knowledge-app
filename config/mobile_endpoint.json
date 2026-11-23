@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "service": "marine-mobile-gateway",
+  "discovery_url": "https://raw.githubusercontent.com/ethanworkspace/hybrid-rag-aquaculture-knowledge-platform/main/streamlit_cloud/backend_endpoint.json",
+  "endpoint_field": "backend_url",
+  "model_id": "M2"
+}

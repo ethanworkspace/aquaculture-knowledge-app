@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'dart:math';
+
 const fishSpecies = ['虱目魚', '吳郭魚', '石斑魚', '鱸魚', '烏魚', '鰻魚'];
 const sampleQuestions = [
   ('虱目魚遇到寒流，應先確認哪些資料？', '虱目魚', '氣候防寒'),
@@ -59,11 +61,15 @@ class Answer {
     required this.text,
     this.sources = const [],
     this.missing = const [],
+    this.origin = 'MODEL_GENERATED',
+    this.corpusVersion = '',
+    this.modelDigest = '',
   });
   final AnswerStatus status;
   final String text;
   final List<SourceEvidence> sources;
   final List<String> missing;
+  final String origin, corpusVersion, modelDigest;
 }
 
 // Never substitute raw_model_answer for a guarded answer.
@@ -96,6 +102,7 @@ class QuestionJob {
   JobStatus status = JobStatus.running;
   Answer? answer;
   String? error;
+  bool canResume = false;
 }
 
 class SavedAnswer {
@@ -106,6 +113,31 @@ class SavedAnswer {
 
 abstract interface class QuestionService {
   Future<Answer> complete(QuestionJob job, DemoScenario scenario);
+}
+
+class QuestionFailure implements Exception {
+  const QuestionFailure(this.message, {this.canResume = false});
+  final String message;
+  final bool canResume;
+  @override
+  String toString() => message;
+}
+
+abstract interface class AuthenticatedQuestionService
+    implements QuestionService {
+  Future<void> signIn(String accessCode);
+  Future<void> signOut();
+  String? get corpusVersion;
+  void dispose();
+}
+
+String newRequestId() {
+  final random = Random.secure();
+  final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
 }
 
 class DemoQuestionService implements QuestionService {
@@ -154,6 +186,17 @@ class DemoQuestionService implements QuestionService {
 class AppStore extends ChangeNotifier {
   AppStore({this.service = const DemoQuestionService()});
   final QuestionService service;
+  bool get isLive => service is AuthenticatedQuestionService;
+  String? get corpusVersion => service is AuthenticatedQuestionService
+      ? (service as AuthenticatedQuestionService).corpusVersion
+      : null;
+  Future<void> authenticate(String accessCode) async {
+    if (service is AuthenticatedQuestionService) {
+      await (service as AuthenticatedQuestionService).signIn(accessCode);
+    }
+    login();
+  }
+
   final List<QuestionJob> _jobs = [];
   final List<SavedAnswer> _saved = [];
   List<QuestionJob> get jobs => List.unmodifiable(_jobs);
@@ -178,11 +221,11 @@ class AppStore extends ChangeNotifier {
     if (!['全部魚種', ...fishSpecies].contains(species)) {
       throw StateError('請選擇有效魚種。');
     }
-    if (_busy) throw StateError('已有一筆示範問答處理中，請先查看紀錄。');
+    if (_busy) throw StateError('已有一筆問答處理中，請先查看紀錄。');
     _busy = true;
     final epoch = _epoch;
     final job = QuestionJob(
-      id: 'demo-${++_serial}',
+      id: isLive ? newRequestId() : 'demo-${++_serial}',
       question: question.trim(),
       species: species,
       at: DateTime.now(),
@@ -205,7 +248,12 @@ class AppStore extends ChangeNotifier {
       job.status = JobStatus.done;
     } catch (error) {
       if (_disposed || epoch != _epoch) return;
-      job.error = error is StateError ? error.message.toString() : '本次問答未完成。';
+      job.error = error is QuestionFailure
+          ? error.message
+          : error is StateError
+          ? error.message.toString()
+          : '本次問答未完成。';
+      job.canResume = error is QuestionFailure && error.canResume;
       job.status = JobStatus.failed;
     } finally {
       if (!_disposed && epoch == _epoch) {
@@ -213,6 +261,17 @@ class AppStore extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+
+  void resume(String id) {
+    final job = findJob(id);
+    if (job == null || !job.canResume || _busy) return;
+    _busy = true;
+    job.status = JobStatus.running;
+    job.error = null;
+    job.canResume = false;
+    notifyListeners();
+    _complete(job, scenario, _epoch);
   }
 
   QuestionJob? findJob(String id) {
@@ -263,6 +322,11 @@ class AppStore extends ChangeNotifier {
   }
 
   void logout() {
+    if (service is AuthenticatedQuestionService) {
+      (service as AuthenticatedQuestionService).signOut().catchError(
+        (Object _) {},
+      );
+    }
     signedIn = false;
     clear();
   }
@@ -271,6 +335,9 @@ class AppStore extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _epoch++;
+    if (service is AuthenticatedQuestionService) {
+      (service as AuthenticatedQuestionService).dispose();
+    }
     super.dispose();
   }
 }

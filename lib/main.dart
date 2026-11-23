@@ -2,11 +2,19 @@ import 'package:material_ui/material_ui.dart';
 
 import 'domain.dart';
 import 'screens.dart';
+import 'gateway_service.dart';
 
 void main() => runApp(AquacultureApp());
 
 class AquacultureApp extends StatefulWidget {
-  AquacultureApp({super.key, AppStore? store}) : store = store ?? AppStore();
+  AquacultureApp({super.key, AppStore? store})
+    : store =
+          store ??
+          AppStore(
+            service: const bool.fromEnvironment('DEMO_MODE')
+                ? const DemoQuestionService()
+                : GatewayService(),
+          );
   final AppStore store;
   @override
   State<AquacultureApp> createState() => _AquacultureAppState();
@@ -23,6 +31,8 @@ class _AquacultureAppState extends State<AquacultureApp> {
   Widget build(BuildContext context) => MaterialApp(
     title: '養殖漁業知識平台',
     debugShowCheckedModeBanner: false,
+    builder: (context, child) =>
+        AppModeScope(store: widget.store, child: child!),
     theme: ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
