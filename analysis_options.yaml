@@ -1,0 +1,10 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  exclude:
+    - archive/**
+    - node_modules/**
+    - dist/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**

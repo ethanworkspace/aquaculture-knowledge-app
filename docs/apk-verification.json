@@ -1,0 +1,19 @@
+{
+  "file": "aquaculture-knowledge-app-0.2.0-demo.apk",
+  "size": 55095271,
+  "sha256": "c4ed5316b75b7d7689aa74fc13d82d45ca54ab4f3d5c076e0976ff03633687e0",
+  "abis": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "version_name": "0.2.0",
+  "version_code": 2,
+  "min_sdk": 24,
+  "target_sdk": 36,
+  "package": "com.ethanworkspace.aquacultureknowledge",
+  "application_label": "養殖漁業知識平台",
+  "build_mode": "release",
+  "signing": "development debug certificate, APK v2 verified",
+  "device_install_tested": false
+}

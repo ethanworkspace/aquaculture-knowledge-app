@@ -1,33 +1,40 @@
-# App 開發與下一階段
+# Flutter／Android Studio 開發
 
-## 選型
+主專案為 repository 根目錄的 Flutter 專案。先前 Expo 程式保存在 `archive/expo/` 作為歷史參考；不再作為主開發路徑。
 
-本機已有 Node.js 與 Android SDK，採用 React Native／Expo／TypeScript，可共用 Android 與 iOS 主要程式。以 Expo Router 管理導覽，Safe Area 與鍵盤避讓處理手機基本佈局。平台目錄依官方 Continuous Native Generation 流程產生。
+## 開啟專案
 
-## 已建立
+1. 安裝 Flutter 穩定版 SDK 與 Android Studio 的 Flutter／Dart 外掛。
+2. 在 Android Studio 開啟本專案根目錄（有 pubspec.yaml 的資料夾），設定本機 Flutter SDK。
+3. 使用 Android SDK Manager 準備對應的 Android 平台與 Build Tools，並使用相容 JDK。
+4. 執行 `flutter pub get`；選擇手機或模擬器後執行 `flutter run`。
 
-- 主畫面與網站同名，沿用網站五張原創水彩 PNG，背景裁切為直向配置。
-- 四個底部入口：首頁、問答、收藏、我的；詳情頁另有回答、來源、個人筆記與紀錄。
-- QuestionService 目前只有 mock 實作。UI 不直接連接共用 RAG 服務，也不提供輸入伺服器管理金鑰的欄位。
-- 任務可在使用者離開回答頁後於記憶體中完成；清除資料或登出會使舊任務結果失效。這不是手機背景推論／程序重啟恢復。
-- 個人筆記與回答快照分開，避免把編輯後文字冒充來源證據。
-
-## 待完成順序
-
-1. 確認正式 App 的帳號服務、使用者資料保存及刪除規則。
-2. 建立 App 專用服務入口。實作任務擁有者、個人紀錄、收藏、刪除與回報；完整定義錯誤碼、限流與任務狀態。
-3. 加入 gateway QuestionService、登入 Token 安全儲存、真正 UUID、任務 ID 保存與斷線後查詢。不把共用 API Key 放入 EXPO_PUBLIC 變數或 App bundle。
-4. 驗證 M2 真實問答、引用原文、圖片授權與 v6 版本定位；不能把 mock 通過當作真實引擎通過。
-5. Android 與 iPhone 實機驗證：小螢幕、放大字體、鍵盤、返回手勢、螢幕閱讀器、弱網路、前背景切換與多帳號隔離。
-6. 設定 Expo／Apple／Google 開發者專案與簽署，產生封閉測試版本。這些帳號與簽署步驟尚未執行。
-
-## 檢查
+## 檢查與產生 APK
 
 ```sh
-npm run typecheck
-npm run lint
-npm test
-npm run export:web
+dart format lib test
+flutter analyze
+flutter test
+flutter build apk --release
 ```
 
-Web export 只驗證共用程式能打包，不代表 Android／iOS 原生建置或真機測試完成。`docs/VALIDATION.md` 記錄實際結果。
+輸出：`build/app/outputs/flutter-apk/app-release.apk`。這是 Release 模式的可安裝測試版，目前採本機 debug 簽章，沒有正式發佈金鑰。Windows 也可執行 `scripts/build-apk.ps1`，以參數指定 Flutter／Android SDK 與 JDK；需要除錯版時加上 `-Mode debug`，輸出為 app-debug.apk。
+
+同一套 Dart 程式已包含 `ios/` 工程，但 iPhone 不能安裝 APK。iOS 安裝版本需在 macOS／Xcode 另行建置與簽署；本次沒有驗證 iOS 原生建置。
+
+## 程式與素材
+
+- `lib/main.dart`：App 主題、登入狀態與應用入口。
+- `lib/screens.dart`：首頁、問答、回答來源、收藏筆記、我的與紀錄；使用 Flutter 畫面元件。
+- `lib/domain.dart`：任務、答案、來源、模擬服務與個人狀態；預留 QuestionService 介面。
+- `assets/website/`：網站原始背景與圖示；由 flutter_launcher_icons 產生 Android／iOS 需要的桌面圖示尺寸。
+- `test/`：回答守門、輸入限制、任務清除與登入到收藏筆記的畫面測試。
+
+## 後續工作
+
+1. 建立使用者登入與 App 專用服務入口，再接現有 v6／M2。
+2. 實作任務權限、真正 request_id、斷線恢復、個人收藏、刪除及雲端保存。
+3. Android／iPhone 真機測試、弱網路、字體放大與背景切換。
+4. 設定正式簽署與封閉測試；不在 GitHub 提交簽署私鑰或服務金鑰。
+
+現有畫面中的登入、回答、引用、回報與筆記仍是明示的本次執行期間示範，並非正式帳號或真實 RAG 結果。

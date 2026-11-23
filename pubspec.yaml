@@ -1,0 +1,27 @@
+name: aquaculture_knowledge_app
+description: 養殖漁業知識平台 Android/iOS Flutter application.
+publish_to: none
+version: 0.2.0+2
+environment:
+  sdk: ^3.14.0
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.1.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/website/
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/website/aquaculture_fish_favicon_v1.png
+  adaptive_icon_background: "#e4f2fc"
+  adaptive_icon_foreground: assets/website/aquaculture_fish_favicon_v1.png
+  remove_alpha_ios: true
+  background_color_ios: "#e4f2fc"
